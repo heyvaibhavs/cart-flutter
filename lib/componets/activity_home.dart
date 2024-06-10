@@ -1,6 +1,7 @@
 import 'package:cart/colors.dart';
 import 'package:cart/componets/activity_login.dart';
 import 'package:cart/componets/activity_splash.dart';
+import 'package:cart/componets/catergory_item_layout.dart';
 import 'package:cart/componets/header_home.dart';
 import 'package:cart/componets/restaurant_layout.dart';
 import 'package:cart/componets/search_bar.dart';
@@ -67,6 +68,7 @@ class _HomeActivityState extends State<HomeActivity> {
                     height: 20,
                   ),
                   SearchBarApp(),
+                  SizedBox(height: 10,),
                   Expanded(
                     child: FutureBuilder<List<Restaurant>>(
                       future: futureRestaurants,
@@ -78,9 +80,23 @@ class _HomeActivityState extends State<HomeActivity> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(18),
-                                  child: Image.asset('assets/image/banner7.png'),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                CategoryLayout(),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Container(
+                                  width: double.infinity,
+                                  height: 150,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Image.asset('assets/image/banner6.png', fit: BoxFit.cover,),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 20,
                                 ),
                                 Text(
                                   'Top Rated Restaurants',
@@ -92,7 +108,7 @@ class _HomeActivityState extends State<HomeActivity> {
                                   ),
                                 ),
                                 SizedBox(
-                                  height: 20,
+                                  height: 10,
                                 ),
                                 Column(
                                   children: restaurants.map((restaurant) {

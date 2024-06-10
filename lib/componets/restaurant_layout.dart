@@ -17,9 +17,13 @@ class RestaurantListLayout extends StatelessWidget {
         children: [
           Stack(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Image.asset('assets/image/banner6.png'),
+              Container(
+                width: double.infinity,
+                height: 180,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.network(restaurant.image, fit: BoxFit.cover,),
+                ),
               ),
               Positioned(
                 top: 10.0,
