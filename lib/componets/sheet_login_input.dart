@@ -1,3 +1,4 @@
+import 'package:cart/componets/activity_home.dart';
 import 'package:cart/componets/activity_otp.dart';
 import 'package:cart/componets/homepage.dart';
 import 'package:cart/utilities/slide_page_route.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
@@ -55,16 +57,17 @@ class _LoginInputBottomSheetState extends State<LoginInputBottomSheet> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['user_exists']) {
-          // User exists, navigate to the OTPActivity page
+        bool isUser = data['user_exists'];
+        if(isUser){
+          SharedPreferences.getInstance().then((prefs) => prefs.setBool('isLogged', true));
           Navigator.push(
-            context,
-            SlidePageRoute(page: OTPActivity(phone: phone,))
+              context,
+              SlidePageRoute(page: HomeActivity()) //add comment when live
+            // SlidePageRoute(page: OTPActivity(phone: phone, isUser: isUser)) Remove comment when live
           );
-        } else {
-          // User does not exist, show a Snackbar
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User does not exist')),
+        }else{
+          Navigator.push(context,
+              SlidePageRoute(page: OTPActivity(phone: phone, isUser: isUser))
           );
         }
       } else {
@@ -80,7 +83,6 @@ class _LoginInputBottomSheetState extends State<LoginInputBottomSheet> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -146,27 +148,6 @@ class _LoginInputBottomSheetState extends State<LoginInputBottomSheet> {
               text: 'CONTINUE',
               isEnabled: _isButtonEnabled,
               onPressed: _isButtonEnabled ? _onUserVerification  : null,
-                //on press call generate csrf token api and if token is not null call check user api, if user exist navigate to another page
-                // Navigator.push(
-                //   context,
-                //   PageRouteBuilder(
-                //     pageBuilder: (context, animation, secondaryAnimation) => OTPActivity(),
-                //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                //       const begin = Offset(1.0, 0.0);
-                //       const end = Offset.zero;
-                //       const curve = Curves.easeInOut;
-                //
-                //       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                //       var offsetAnimation = animation.drive(tween);
-                //
-                //       return SlideTransition(
-                //         position: offsetAnimation,
-                //         child: child,
-                //       );
-                //     },
-                //   ),
-                // );
-
             ),
             const SizedBox(
               height: 15,

@@ -3,15 +3,18 @@ import 'dart:developer';
 import 'package:cart/buttons/button_orange.dart';
 import 'package:cart/colors.dart';
 import 'package:cart/componets/activity_home.dart';
+import 'package:cart/componets/activity_signup.dart';
 import 'package:cart/utilities/slide_page_route.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OTPActivity extends StatefulWidget {
   final String phone;
-  const OTPActivity({super.key, required this.phone});
+  final bool isUser;
+  const OTPActivity({super.key, required this.phone, required this.isUser});
 
   @override
   State<OTPActivity> createState() => _OTPActivityState();
@@ -23,7 +26,7 @@ class _OTPActivityState extends State<OTPActivity> {
   String? _verificationId;
   int? resendToken;
   String _messageOTP = 'no message';
-  late String phoneNumber;
+  late String phoneNumber =widget.phone;
 
   void _onOtpChanged() {
     setState(() {
@@ -35,6 +38,7 @@ class _OTPActivityState extends State<OTPActivity> {
   void initState() {
     phoneNumber = '+91${widget.phone}';
     _otpController.addListener(_onOtpChanged);
+    _sendOtp();
     super.initState();
   }
 
@@ -51,11 +55,37 @@ class _OTPActivityState extends State<OTPActivity> {
     });
   }
 
-  // void _sendOtp() async {
-  //
-  // }
+  void _sendOtp() async {
+    _updateText('Sending OTP...');
+    try{
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credentials) {
+          _updateText('Verification completed automatically');
+        },
+        verificationFailed: (FirebaseAuthException ex) {
+          _updateText('Verification failed: ${ex.message}');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          setState(() {
+            _verificationId = verificationId;
+            this.resendToken = resendToken;
+          });
+          _updateText('OTP Sent');
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          setState(() {
+            _verificationId = verificationId;
+          });
+        },
+      );
+    }catch(ex){
+      _updateText('Failed to send ${ex.toString()}');
+    }
+  }
 
   void _verifyOtp() async {
+
     final otp = _otpController.text;
     if (_verificationId == null) {
       _updateText('OTP has not been sent yet.');
@@ -67,9 +97,16 @@ class _OTPActivityState extends State<OTPActivity> {
           verificationId: _verificationId!, smsCode: otp);
       FirebaseAuth.instance.signInWithCredential(credential).then((value) {
         _updateText('OTP verified successfully');
-        Navigator.push(context,
-          SlidePageRoute(page: HomeActivity())
-        );
+        if(widget.isUser){
+          SharedPreferences.getInstance().then((prefs) => prefs.setBool('isLogged', true));
+          Navigator.push(context,
+              SlidePageRoute(page: HomeActivity())
+          );
+        }else{
+          Navigator.push(context,
+              SlidePageRoute(page: SignUpActivity(phone: widget.phone))
+          );
+        }
       });
     } catch (ex) {
       _updateText('Failed to verify OTP: ${ex.toString()}');
@@ -180,34 +217,6 @@ class _OTPActivityState extends State<OTPActivity> {
                     SizedBox(
                       height: 20,
                     ),
-                    ElevatedButton(onPressed: ()async{
-                      _updateText('under try start');
-                      try{
-                        await FirebaseAuth.instance.verifyPhoneNumber(
-                          phoneNumber: phoneNumber,
-                          verificationCompleted: (PhoneAuthCredential credentials) {
-                            _updateText('Verification completed automatically');
-                          },
-                          verificationFailed: (FirebaseAuthException ex) {
-                            _updateText('Verification failed: ${ex.message}');
-                          },
-                          codeSent: (String verificationId, int? resendToken) {
-                            setState(() {
-                              _verificationId = verificationId;
-                              this.resendToken = resendToken;
-                            });
-                            _updateText('send successs');
-                          },
-                          codeAutoRetrievalTimeout: (String verificationId) {
-                            setState(() {
-                              _verificationId = verificationId;
-                            });
-                          },
-                        );
-                      }catch(ex){
-                        _updateText('Failed to send ${ex.toString()}');
-                      }
-                    }, child: Text('SEND OTP')),
                     CustomButton(
                       height: 50,
                       borderRadius: 5,

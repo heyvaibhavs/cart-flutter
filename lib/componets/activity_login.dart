@@ -28,7 +28,6 @@ class LoginActivityState extends State<LoginActivity> {
         ));
   }
 
-  final _formKey = GlobalKey<FormState>();
   String user_phone = '';
 
   @override
